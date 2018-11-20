@@ -4,34 +4,19 @@ import {
   Params, Body, Query,
 } from '@decorators/express';
 
-import config from '../config';
+import APIController from './base.controller';
 
 @Controller('/')
-class UsersController {
-  public db: any;
+class UsersController extends APIController {
 
-  constructor(db: any) {
-    this.db = config.db;
+  constructor() {
+    super();
+    this.table = 'users';
   }
 
   @Get('/users/:id')
-  async getData(@Response() res: any, @Params('id') id: string) {
-    const users = await this.db
-      .where({ id })
-      .select()
-      .from('users').
-      timeout(1000);
-    if (users.length > 0) {
-      res.send({
-        success: true,
-        data: users[0]
-      });
-    } else {
-      res.status(404).send({
-        success: false,
-        message: 'No User with provided id',
-      });
-    }
+  async getUser(@Response() res: any, @Params('id') id: string) {
+    this.getOneById(res, id);
   }
 
   @Post('/users')
@@ -41,26 +26,19 @@ class UsersController {
       first_name,
       last_name
     } = data;
-    if (email) {
-      const duplicates = await this.db
-        .where({ email })
-        .select('id')
-        .from('users').
-        timeout(1000);
 
-      if (duplicates.length === 0) {
-        data.date = new Date();
-        const result = await this.db('users')
-          .insert(data);
-        const user = await this.db
-          .where({ email })
-          .select()
-          .from('users').
-          timeout(1000);
-        res.send({
-          success: true,
-          data: user[0],
-        });
+    const userData = {
+      email,
+      first_name,
+      last_name,
+      date: new Date()
+    };
+
+    if (email) {
+      const duplicate = await this.getOne({ email });
+
+      if (!duplicate) {
+        this.insertOne(res, userData);
       } else {
         res.status(404).send({
           success: false,

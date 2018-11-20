@@ -18,7 +18,8 @@ const controllers: any[] = [];
 const normalizedPath = require("path").join(__dirname, "controllers");
 
 require("fs").readdirSync(normalizedPath).forEach(function (file: string) {
-  controllers.push(require("./controllers/" + file).default);
+  if (file.indexOf('base') === -1)
+    controllers.push(require("./controllers/" + file).default);
 });
 
 attachControllers(app, controllers);
