@@ -1,6 +1,6 @@
 {
   "name": "yerevan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node, TypeScript, Knex, PostgreSQL Starter Kit",
   "main": "lib/index",
   "types": "lib/index",
