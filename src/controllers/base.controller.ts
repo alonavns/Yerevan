@@ -14,22 +14,15 @@ class APIController {
   }
 
   async getOneById(@Response() res: any, id: string) {
-    const items = await this.db
-      .where({ id })
-      .select()
-      .from(this.table).
-      timeout(1000);
+    const item = await this.getOne({ id });
 
-    if (items.length > 0) {
+    if (item) {
       res.send({
         success: true,
-        data: items[0]
+        data: item
       });
     } else {
-      res.status(404).send({
-        success: false,
-        message: 'No Data with provided id',
-      });
+      this.errorHandler(res, 'No Data with provided id');
     }
   }
 
@@ -51,15 +44,27 @@ class APIController {
     const result = await this.db('users')
       .insert(data);
 
-    const items = await this.db
-      .where(data)
-      .select()
-      .from(this.table).
-      timeout(1000);
+    const item = await this.getOne(data);
 
     res.send({
       success: true,
-      data: items[0],
+      data: item,
+    });
+  }
+
+  async updateOne(@Response() res: any, data: any) {
+    const { id } = data;
+    const result = await this.db('users')
+      .where({ id })
+      .update(data)
+
+    this.getOneById(res, id);
+  }
+
+  errorHandler(@Response() res: any, message: string) {
+    res.status(403).send({
+      success: false,
+      message,
     });
   }
 }

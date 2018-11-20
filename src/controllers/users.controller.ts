@@ -18,34 +18,47 @@ class UsersController extends APIController {
   @Post('/users')
   async create(@Response() res: any, @Body('data') data: any) {
     const {
-      email,
-      first_name,
-      last_name
-    } = data;
-
-    const userData = {
+      id,
       email,
       first_name,
       last_name,
-      date: new Date()
-    };
+    } = data;
 
-    if (email) {
-      const duplicate = await this.getOne({ email });
+    if (id) {
+      const user = await this.getOne({ id });
 
-      if (!duplicate) {
-        this.insertOne(res, userData);
+      if (first_name) user.first_name = first_name;
+      if (last_name) user.last_name = last_name;
+      user.date = new Date();
+
+      if (email && email != user.email) {
+        const duplicate = await this.getOne({ email });
+
+        if (!duplicate) {
+          user.email = email;
+        } else {
+          return this.errorHandler(res, 'Email already exists');
+        }
+      }
+
+      if (user) {
+        this.updateOne(res, user);
       } else {
-        res.status(404).send({
-          success: false,
-          message: 'Email already exists',
-        });
+        this.errorHandler(res, 'No User with provided id');
       }
     } else {
-      res.status(404).send({
-        success: false,
-        message: 'Email is not provided',
-      });
+      if (email) {
+        const duplicate = await this.getOne({ email });
+        data.date = new Date();
+
+        if (!duplicate) {
+          this.insertOne(res, data);
+        } else {
+          this.errorHandler(res, 'Email already exists');
+        }
+      } else {
+        this.errorHandler(res, 'Email is not provided');
+      }
     }
   }
 }
