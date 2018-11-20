@@ -8,11 +8,7 @@ import APIController from './base.controller';
 
 @Controller('/')
 class UsersController extends APIController {
-
-  constructor() {
-    super();
-    this.table = 'users';
-  }
+  public table: string = 'users';
 
   @Get('/users/:id')
   async getUser(@Response() res: any, @Params('id') id: string) {
