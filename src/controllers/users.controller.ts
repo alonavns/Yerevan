@@ -1,66 +1,77 @@
 import {
   Response, Controller,
-  Get, Post,
+  Get, Post, Put, Delete,
   Params, Body, Query,
-} from '@decorators/express';
+} from '@decorators/express'
 
-import APIController from './base.controller';
+import APIController from './base.controller'
 
-@Controller('/')
+@Controller('/users')
 class UsersController extends APIController {
-  public table: string = 'users';
+  public table: string = 'users'
 
-  @Get('/users/:id')
-  async getUser(@Response() res: any, @Params('id') id: string) {
-    this.getOneById(res, id);
+  @Get('/')
+  async getUsers(@Response() res: any, @Query() filters: object) {
+    this.getAll(res, filters)
   }
 
-  @Post('/users')
+  @Get('/:id')
+  async getUser(@Response() res: any, @Params('id') id: string) {
+    this.getOneById(res, id)
+  }
+
+  @Post('/')
+  @Put('/')
   async create(@Response() res: any, @Body('data') data: any) {
     const {
       id,
       email,
       first_name,
       last_name,
-    } = data;
+    } = data
 
     if (id) {
-      const user = await this.getOne({ id });
+      const user = await this.getOne({ id })
 
-      if (first_name) user.first_name = first_name;
-      if (last_name) user.last_name = last_name;
-      user.date = new Date();
+      if (first_name) user.first_name = first_name
+      if (last_name) user.last_name = last_name
+      user.date = new Date()
 
       if (email && email != user.email) {
-        const duplicate = await this.getOne({ email });
+        const duplicate = await this.getOne({ email })
 
         if (!duplicate) {
-          user.email = email;
+          user.email = email
         } else {
-          return this.errorHandler(res, 'Email already exists');
+          return this.errorHandler(res, 'Email already exists')
         }
       }
 
       if (user) {
-        this.updateOne(res, user);
+        this.updateOne(res, user)
       } else {
-        this.errorHandler(res, 'No User with provided id');
+        this.errorHandler(res, 'No User with provided id')
       }
     } else {
       if (email) {
-        const duplicate = await this.getOne({ email });
-        data.date = new Date();
+        const duplicate = await this.getOne({ email })
+        data.date = new Date()
 
         if (!duplicate) {
-          this.insertOne(res, data);
+          this.insertOne(res, data)
         } else {
-          this.errorHandler(res, 'Email already exists');
+          this.errorHandler(res, 'Email already exists')
         }
       } else {
-        this.errorHandler(res, 'Email is not provided');
+        this.errorHandler(res, 'Email is not provided')
       }
     }
   }
+
+  @Delete('/:id')
+  async deleteUser(@Response() res: any, @Params('id') id: string) {
+    this.deleteOne(res, id)
+  }
 }
 
-export default UsersController;
+export default UsersController
